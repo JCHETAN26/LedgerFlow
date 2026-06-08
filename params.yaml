@@ -1,0 +1,15 @@
+# LedgerFlow configuration parameters
+data:
+  raw_table: event_logs
+  date_col: event_timestamp
+  user_col: user_id
+
+features:
+  time_windows: [1h, 6h, 24h, 7d, 30d]
+  aggregations: [count, sum, mean, std, min, max, last]
+
+evaluation:
+  test_size: 0.2
+  val_size: 0.1
+  cv_folds: 5
+  random_seed: 42
