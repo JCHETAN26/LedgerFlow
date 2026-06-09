@@ -74,14 +74,78 @@ class FeaturePipeline:
         # Users with no activity in a window had 0 events / 0 spend.
         return wide.fillna(0.0)
 
+    def _compute_all(
+        self, df: pd.DataFrame, reference_time: pd.Timestamp
+    ) -> pd.DataFrame:
+        """Serial: compute every feature for ``df`` as of ``reference_time``.
+
+        Returns the wide frame (columns in registry order) before null-filling.
+        This is the shared, un-parallelised core used by the single-user and
+        point-in-time paths so they call the exact same ``compute()`` code.
+        """
+        reference_time = pd.Timestamp(reference_time)
+        series = [feat.compute(df, reference_time) for feat in self.features]
+        wide = pd.concat(series, axis=1) if series else pd.DataFrame()
+        return wide.reindex(columns=self.feature_names)
+
     def transform_batch(
         self,
         df: pd.DataFrame,
         reference_time: pd.Timestamp,
         n_jobs: int = -1,
     ) -> pd.DataFrame:
-        """Training path: compute features for all users in ``df``."""
+        """Training path (single as-of time): features for all users in ``df``.
+
+        Every user is evaluated as of the same ``reference_time``. For the
+        leakage-safe per-user variant, see :meth:`transform_point_in_time`.
+        """
         return self.run(df, reference_time, n_jobs=n_jobs)
+
+    def transform_point_in_time(
+        self,
+        df: pd.DataFrame,
+        reference_times: pd.Series | dict,
+        n_jobs: int = -1,
+    ) -> pd.DataFrame:
+        """Training path (point-in-time): each user as of their own time.
+
+        A user's feature vector reflects only events up to *their* reference
+        time (e.g. their ``decision_time``), which matches how the time-based
+        split orders users — eliminating the feature-time vs split-time skew.
+        Each user is computed through :meth:`transform_single`, so the batch
+        and serving paths remain bit-for-bit identical.
+
+        Args:
+            df: Event log for many users.
+            reference_times: Mapping ``user_id -> reference Timestamp``
+                (a dict or a pandas Series indexed by user_id).
+            n_jobs: joblib worker count across users.
+
+        Returns:
+            DataFrame indexed by ``user_id`` (one row per entry in
+            ``reference_times``), one column per feature, null-free.
+        """
+        if isinstance(reference_times, pd.Series):
+            reference_times = reference_times.to_dict()
+
+        groups = dict(tuple(df.groupby("user_id")))
+        user_ids = list(reference_times)
+
+        rows = joblib.Parallel(n_jobs=n_jobs)(
+            joblib.delayed(self._user_row)(groups.get(uid), reference_times[uid])
+            for uid in user_ids
+        )
+        out = pd.DataFrame(rows, index=user_ids)
+        out.index.name = "user_id"
+        return out[self.feature_names].fillna(0.0)
+
+    def _user_row(
+        self, user_history: pd.DataFrame | None, reference_time: pd.Timestamp
+    ) -> dict:
+        """Feature dict for one user's history (picklable joblib worker)."""
+        if user_history is None or user_history.empty:
+            return dict.fromkeys(self.feature_names, 0.0)
+        return self.transform_single(user_history, reference_time)
 
     def transform_single(
         self,
@@ -90,8 +154,8 @@ class FeaturePipeline:
     ) -> dict:
         """Inference path: compute features for a single user.
 
-        Uses the exact same ``compute()`` calls as :meth:`transform_batch`, so a
-        user's feature vector is identical whether computed in a batch or alone.
+        Uses the exact same ``compute()`` calls as the batch paths, so a user's
+        feature vector is identical whether computed in a batch or alone.
 
         Args:
             user_history: Event history for exactly one user.
@@ -104,9 +168,9 @@ class FeaturePipeline:
             return dict.fromkeys(self.feature_names, 0.0)
 
         user_id = user_history["user_id"].iloc[0]
-        result = self.run(user_history, reference_time, n_jobs=1)
+        wide = self._compute_all(user_history, reference_time)
         # Ensure exactly the target user's row exists (filled with 0 if no events).
-        row = result.reindex([user_id]).fillna(0.0).loc[user_id]
+        row = wide.reindex([user_id]).fillna(0.0).loc[user_id]
         return dict(row.to_dict())
 
 
@@ -122,8 +186,10 @@ def featurize_main(
 ) -> str:
     """Run the featurize stage end-to-end and write outputs.
 
-    Reads validated raw events, computes the 35-feature matrix as of the most
-    recent event timestamp, joins per-user labels, and writes the processed
+    Reads validated raw events and per-user labels, then computes the 35-feature
+    matrix **point-in-time**: each user is evaluated as of their own
+    ``decision_time`` (the same timestamp the split orders by), so no feature
+    reflects events from after the user's decision moment. Writes the processed
     Parquet plus a runtime metric.
 
     Returns:
@@ -132,18 +198,20 @@ def featurize_main(
     events = pd.read_parquet(events_path)
     labels = pd.read_parquet(labels_path)
 
-    reference_time = events["event_timestamp"].max()
+    # Each user is featurized as of their own decision_time (point-in-time).
+    reference_times = labels.set_index("user_id")["decision_time"]
     logger.info(
-        "Featurizing %d events for %d users as of %s",
+        "Featurizing %d events for %d users point-in-time (decision_time %s..%s)",
         len(events),
-        events["user_id"].nunique(),
-        reference_time,
+        labels["user_id"].nunique(),
+        reference_times.min(),
+        reference_times.max(),
     )
 
     pipeline = FeaturePipeline()
 
     start = time.perf_counter()
-    features = pipeline.transform_batch(events, reference_time)
+    features = pipeline.transform_point_in_time(events, reference_times)
     runtime_seconds = time.perf_counter() - start
 
     # Labels define the user universe: a user with no purchases at all has an
@@ -160,7 +228,8 @@ def featurize_main(
         "n_users": int(len(features)),
         "n_features": int(len(pipeline.feature_names)),
         "runtime_seconds": round(runtime_seconds, 4),
-        "reference_time": reference_time.isoformat(),
+        "decision_time_min": reference_times.min().isoformat(),
+        "decision_time_max": reference_times.max().isoformat(),
     }
     metrics_file = Path(metrics_path)
     metrics_file.parent.mkdir(parents=True, exist_ok=True)

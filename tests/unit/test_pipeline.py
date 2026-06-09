@@ -84,6 +84,37 @@ def test_transform_single_empty_history():
     assert all(v == 0.0 for v in result.values())
 
 
+def test_transform_point_in_time_per_user(events):
+    pipe = FeaturePipeline()
+    # Evaluate user "a" at REFERENCE, user "b" 40 minutes earlier.
+    ref_times = {"a": REFERENCE, "b": REFERENCE - pd.Timedelta("40min")}
+    pit = pipe.transform_point_in_time(events, ref_times, n_jobs=1)
+
+    assert list(pit.index) == ["a", "b"]
+    assert list(pit.columns) == pipe.feature_names
+    # a within 24h has 2 purchases (5.0 @ -30m, 10.0 @ -3h).
+    assert pit.loc["a", "purchase_count_24h"] == pytest.approx(2.0)
+    # b's purchase (-45m) is 5 min before b's reference time -> counted in 1h.
+    assert pit.loc["b", "purchase_count_1h"] == pytest.approx(1.0)
+
+
+def test_transform_point_in_time_accepts_series(events):
+    pipe = FeaturePipeline()
+    ref_times = pd.Series(
+        {"a": REFERENCE, "b": REFERENCE}, name="decision_time"
+    )
+    pit = pipe.transform_point_in_time(events, ref_times, n_jobs=1)
+    assert set(pit.index) == {"a", "b"}
+    assert not pit.isnull().any().any()
+
+
+def test_transform_point_in_time_unknown_user_is_zero(events):
+    pipe = FeaturePipeline()
+    ref_times = {"ghost": REFERENCE}  # no events for this user
+    pit = pipe.transform_point_in_time(events, ref_times, n_jobs=1)
+    assert (pit.loc["ghost"] == 0).all()
+
+
 def test_custom_feature_subset():
     subset = ALL_FEATURES[:3]
     pipe = FeaturePipeline(features=subset)

@@ -8,6 +8,7 @@ LedgerFlow is a Python library that:
 - Pulls raw event logs from PostgreSQL (with an offline synthetic generator for CI/dev)
 - Validates the schema strictly with Pandera before any processing
 - Generates 35 time-window aggregation features (5 windows × 7 aggregations)
+- Computes features **point-in-time** — each user as of their own `decision_time`, so no feature leaks information from after the moment being predicted
 - Computes batch (training) and single-user (inference) features through one code path — no training-serving skew
 - Runs offline model evaluation across Logistic Regression, XGBoost, and LightGBM
 - Auto-generates a recommendation memo comparing models on calibration and precision-recall
