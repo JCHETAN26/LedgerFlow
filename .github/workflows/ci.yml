@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run tests with coverage (gate: 90%)
+      - name: "Run tests with coverage (gate 90%)"
         run: |
           pytest tests/ \
             --cov=LedgerFlow \
@@ -32,9 +32,51 @@ jobs:
         run: |
           pytest tests/integration/test_benchmark.py -m benchmark -v
 
-      - name: Check DVC pipeline consistency
+      - name: Reproduce DVC pipeline from clean checkout
+        # Real repro (not --dry): the synthetic `ingest` stage makes the whole
+        # pipeline self-contained, so this validates every stage end-to-end and
+        # proves reproducibility from a fresh checkout. --dry would fail here
+        # because intermediate outputs are DVC-managed and absent on checkout.
         run: |
-          dvc repro --dry
+          dvc repro
+          dvc status
+
+  integration-db:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ledgerflow
+          POSTGRES_USER: ledgeruser
+          POSTGRES_PASSWORD: ledgerpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ledgeruser -d ledgerflow"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      LEDGERFLOW_DB_HOST: localhost
+      LEDGERFLOW_DB_PORT: "5432"
+      LEDGERFLOW_DB_NAME: ledgerflow
+      LEDGERFLOW_DB_USER: ledgeruser
+      LEDGERFLOW_DB_PASSWORD: ledgerpass
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run real Postgres integration tests
+        run: |
+          pytest tests/integration/test_loader.py -v
 
   lint:
     runs-on: ubuntu-latest

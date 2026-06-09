@@ -1,0 +1,24 @@
+# Local PostgreSQL for running the integration tests.
+#
+#   docker compose up -d
+#   export LEDGERFLOW_DB_HOST=localhost LEDGERFLOW_DB_PORT=5432 \
+#          LEDGERFLOW_DB_NAME=ledgerflow LEDGERFLOW_DB_USER=ledgeruser \
+#          LEDGERFLOW_DB_PASSWORD=ledgerpass
+#   pytest tests/integration/test_loader.py -v
+#
+# The integration tests seed their own event_logs table, so no manual SQL needed.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ledgerflow-postgres
+    environment:
+      POSTGRES_DB: ledgerflow
+      POSTGRES_USER: ledgeruser
+      POSTGRES_PASSWORD: ledgerpass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledgeruser -d ledgerflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

@@ -48,6 +48,13 @@ dev = [
     "mypy>=1.7.0",
     "pre-commit>=3.5.0",
 ]
+notebooks = [
+    "matplotlib>=3.7",
+    "jupyter>=1.0",
+    "nbconvert>=7.0",
+    "nbformat>=5.0",
+    "ipykernel>=6.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/JCHETAN26/LedgerFlow"
