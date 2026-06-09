@@ -118,12 +118,12 @@ pytest tests/integration/
 
 ### DVC Pipeline
 
-```bash
-# Initialize DVC (first time only)
-dvc init
-dvc remote add -d myremote s3://LedgerFlow-artifacts/
+The default remote is an S3 bucket (`s3://ledgerflow-artifacts-049000283645/`,
+configured in `.dvc/config`). `dvc push`/`pull` require AWS credentials with
+access to it.
 
-# Run the full pipeline
+```bash
+# Run the full pipeline (self-contained — synthetic ingest, no DB needed)
 dvc repro
 
 # Check what would re-run
