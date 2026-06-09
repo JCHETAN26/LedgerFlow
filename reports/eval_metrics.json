@@ -1,0 +1,30 @@
+{
+  "models": {
+    "LogisticRegression": {
+      "auc_roc": 0.84031112444978,
+      "avg_precision": 0.8217577423578263,
+      "brier_score": 0.17164654694938722,
+      "log_loss": 0.5663468958393945,
+      "precision_at_5pct_fpr": 0.9065420560747663,
+      "f1": 0.7714285714285715
+    },
+    "XGBoost": {
+      "auc_roc": 0.8373099239695878,
+      "avg_precision": 0.8338696399112436,
+      "brier_score": 0.16594094038009644,
+      "log_loss": 0.5046098828315735,
+      "precision_at_5pct_fpr": 0.8979591836734694,
+      "f1": 0.7397260273972602
+    },
+    "LightGBM": {
+      "auc_roc": 0.8466761704681872,
+      "avg_precision": 0.8477640760946652,
+      "brier_score": 0.1616097026635632,
+      "log_loss": 0.4925786792505001,
+      "precision_at_5pct_fpr": 0.9081632653061225,
+      "f1": 0.7554347826086957
+    }
+  },
+  "recommended": "LightGBM",
+  "recommendation_reason": "LightGBM has the highest test AUC-ROC (0.8467) with a Brier score of 0.1616."
+}

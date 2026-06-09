@@ -9,7 +9,7 @@ from datetime import datetime
 from LedgerFlow.features.base import BaseFeature
 
 
-class TestFeature(BaseFeature):
+class SampleFeature(BaseFeature):
     """Concrete implementation for testing."""
     
     def __init__(self):
@@ -32,7 +32,7 @@ def test_base_feature_abstract_method():
 
 def test_concrete_feature_implementation():
     """Test that a concrete feature can be instantiated and used."""
-    feature = TestFeature()
+    feature = SampleFeature()
     
     # Test attributes
     assert feature.name == "test_feature"
@@ -44,7 +44,7 @@ def test_concrete_feature_implementation():
     # Test compute method with sample data
     df = pd.DataFrame({
         "user_id": ["user1", "user1", "user2", "user3"],
-        "event_timestamp": pd.date_range("2024-01-01", periods=4, freq="H"),
+        "event_timestamp": pd.date_range("2024-01-01", periods=4, freq="h"),
         "event_type": ["purchase", "login", "purchase", "view"],
         "amount": [10.0, None, 20.0, None],
     })
@@ -63,7 +63,7 @@ def test_concrete_feature_implementation():
 
 def test_validate_output():
     """Test the validate_output method."""
-    feature = TestFeature()
+    feature = SampleFeature()
     
     # Valid output
     valid_series = pd.Series(
@@ -95,7 +95,7 @@ def test_validate_output():
 def test_nullable_feature():
     """Test a feature with nullable=True."""
     
-    class NullableFeature(TestFeature):
+    class NullableFeature(SampleFeature):
         def __init__(self):
             super().__init__()
             self.nullable = True

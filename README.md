@@ -5,12 +5,18 @@ A modular, tested, and versioned feature engineering library that transforms raw
 ## Overview
 
 LedgerFlow is a Python library that:
-- Pulls raw event logs from PostgreSQL
+- Pulls raw event logs from PostgreSQL (with an offline synthetic generator for CI/dev)
 - Validates the schema strictly with Pandera before any processing
 - Generates 35 time-window aggregation features (5 windows × 7 aggregations)
+- Computes batch (training) and single-user (inference) features through one code path — no training-serving skew
 - Runs offline model evaluation across Logistic Regression, XGBoost, and LightGBM
 - Auto-generates a recommendation memo comparing models on calibration and precision-recall
 - Versions every artifact — data, features, models, metrics — with DVC for full reproducibility
+
+> **Data source note:** the DVC `ingest` stage uses a deterministic synthetic
+> event-log generator (`LedgerFlow.data.synthetic`) so `dvc repro` and CI run
+> without a database. In production this stage is swapped for the PostgreSQL
+> loader (`LedgerFlow.data.loader`); both emit the same Pandera-validated schema.
 
 ## Quick Start
 
@@ -35,61 +41,68 @@ pip install -e ".[dev]"
 LedgerFlow/
 ├── LedgerFlow/              # Main Python package
 │   ├── __init__.py
+│   ├── params.py           # params.yaml loader
 │   ├── registry.py         # Feature catalog + metadata
-│   ├── validators.py       # Pandera input schemas
+│   ├── pipeline.py         # FeaturePipeline (batch + single-user)
+│   ├── data/
+│   │   ├── loader.py       # PostgreSQL loader (production ingest)
+│   │   ├── synthetic.py    # Offline synthetic event-log generator
+│   │   ├── validators.py   # Pandera input schema + business rules
+│   │   ├── ingest.py       # Postgres → Parquet orchestrator
+│   │   └── splitter.py     # Time-based train/val/test split
 │   ├── features/
-│   │   ├── __init__.py
 │   │   ├── base.py         # BaseFeature abstract class
-│   │   ├── time_windows.py # Time-window aggregation features
-│   │   └── utils.py        # Shared helpers
-│   ├── pipeline.py         # Orchestrates feature generation
+│   │   └── time_windows.py # 35 time-window aggregation features
 │   └── evaluation/
-│       ├── metrics.py      # Calibration, PR, feature importance
+│       ├── metrics.py      # Calibration, PR, precision@FPR
 │       ├── compare.py      # Multi-model comparison runner
-│       └── report.py       # Auto-generate evaluation memo
-├── data/
-│   ├── raw/                # Raw event logs (DVC-tracked)
-│   ├── processed/          # Parquet feature files (DVC-tracked)
-│   └── splits/             # Train/val/test splits (DVC-tracked)
+│       ├── report.py       # Jinja2 recommendation-memo generator
+│       └── templates/      # Memo template
+├── scripts/
+│   ├── new_feature.py      # Scaffold a new feature in < 20 min
+│   └── reproduce_experiment.sh
+├── data/{raw,processed,splits}/   # DVC-tracked artifacts
 ├── models/                 # Trained model artifacts (DVC-tracked)
-├── reports/                # Auto-generated evaluation memos
-├── tests/
-│   ├── unit/               # One test file per feature module
-│   ├── integration/        # Pipeline end-to-end tests
-│   └── conftest.py
+├── reports/                # Metrics JSON + auto-generated memo
+├── tests/{unit,integration}/
 ├── dvc.yaml                # DVC pipeline stages
 ├── params.yaml             # All configurable parameters
-├── .github/workflows/
-│   └── ci.yml              # GitHub Actions CI
-└── notebooks/
-    ├── 01_eda.ipynb
-    └── 02_feature_analysis.ipynb
+└── .github/workflows/ci.yml
+```
+
+### Run the pipeline (offline, no database)
+
+```bash
+# Reproduce the full pipeline: ingest → featurize → split → evaluate → report
+dvc repro
+
+# View model metrics and the auto-generated recommendation
+dvc metrics show
+cat reports/recommendation_memo.md
 ```
 
 ## Development
 
-### Adding a New Feature
+### Adding a New Feature (< 20 minutes)
 
-1. Create a new class inheriting from `BaseFeature`:
-```python
-from LedgerFlow.features.base import BaseFeature
+Use the scaffold to generate a ready-to-implement feature class and its test:
 
-class MyNewFeature(BaseFeature):
-    def __init__(self, window: str):
-        self.window = window
-        self.name = f"my_feature_{window}"
-        self.description = f"My new feature for {window} window"
-        self.output_dtype = "float"
-        self.nullable = False
-    
-    def compute(self, df: pd.DataFrame, reference_time: pd.Timestamp) -> pd.Series:
-        # Your implementation here
-        pass
+```bash
+python scripts/new_feature.py \
+  --name session_count_24h \
+  --window 24h \
+  --description "Number of distinct sessions in the last 24h"
 ```
 
-2. Register the feature (automatically done if using the factory pattern)
-3. Write unit tests in `tests/unit/`
-4. Run tests: `pytest tests/unit/test_my_feature.py`
+This writes `LedgerFlow/features/custom/session_count_24h.py` (a `BaseFeature`
+subclass that registers itself) and `tests/unit/test_session_count_24h.py`. Then:
+
+1. Implement `compute()` — return a `pd.Series` indexed by `user_id`, named `self.name`.
+2. Fill in the test assertions (happy path + edge case).
+3. Run: `pytest tests/unit/test_session_count_24h.py -v`
+
+Every feature registers itself on construction, so the catalog and the CI
+registry check stay in sync automatically.
 
 ### Running Tests
 

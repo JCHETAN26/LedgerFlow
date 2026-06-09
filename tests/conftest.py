@@ -24,9 +24,9 @@ def sample_event_data():
         "user_id": np.random.choice(user_ids, n_events),
         "event_type": np.random.choice(event_types, n_events, p=[0.3, 0.2, 0.3, 0.2]),
         "event_timestamp": pd.date_range(
-            start="2024-01-01", 
-            periods=n_events, 
-            freq="1H"
+            start="2024-01-01",
+            periods=n_events,
+            freq="1h"
         ),
         "amount": np.random.exponential(scale=50, size=n_events),
         "session_id": [f"session_{i}" for i in range(n_events)],

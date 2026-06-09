@@ -1,0 +1,72 @@
+stages:
+  ingest:
+    # Offline-reproducible source. In production this stage runs the PostgreSQL
+    # loader (LedgerFlow.data.loader); the synthetic generator keeps `dvc repro`
+    # and CI runnable without a database.
+    cmd: python -m LedgerFlow.data.synthetic
+    deps:
+      - LedgerFlow/data/synthetic.py
+      - LedgerFlow/data/validators.py
+      - params.yaml
+    outs:
+      - data/raw/events.parquet
+      - data/raw/labels.parquet
+
+  featurize:
+    cmd: python -m LedgerFlow.pipeline
+    deps:
+      - LedgerFlow/pipeline.py
+      - LedgerFlow/features
+      - LedgerFlow/registry.py
+      - data/raw/events.parquet
+      - data/raw/labels.parquet
+    outs:
+      - data/processed/features.parquet
+    metrics:
+      - reports/feature_runtime.json:
+          cache: false
+
+  split:
+    cmd: python -m LedgerFlow.data.splitter
+    deps:
+      - LedgerFlow/data/splitter.py
+      - LedgerFlow/params.py
+      - data/processed/features.parquet
+      - params.yaml
+    outs:
+      - data/splits/train.parquet
+      - data/splits/val.parquet
+      - data/splits/test.parquet
+
+  evaluate:
+    cmd: python -m LedgerFlow.evaluation.compare
+    deps:
+      - LedgerFlow/evaluation/compare.py
+      - LedgerFlow/evaluation/metrics.py
+      - LedgerFlow/features/time_windows.py
+      - data/splits/train.parquet
+      - data/splits/val.parquet
+      - data/splits/test.parquet
+      - params.yaml
+    outs:
+      - models
+      - reports/curves
+      - reports/feature_importance.json:
+          cache: false
+      - reports/low_signal_features.json:
+          cache: false
+    metrics:
+      - reports/eval_metrics.json:
+          cache: false
+
+  report:
+    cmd: python -m LedgerFlow.evaluation.report
+    deps:
+      - LedgerFlow/evaluation/report.py
+      - LedgerFlow/evaluation/templates
+      - reports/eval_metrics.json
+      - reports/feature_importance.json
+      - reports/low_signal_features.json
+    outs:
+      - reports/recommendation_memo.md:
+          cache: false

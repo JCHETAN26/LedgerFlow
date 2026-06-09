@@ -23,10 +23,12 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "pandas>=2.0.0",
-    "numpy>=1.24.0",
+    "pandas>=2.2,<3.0",
+    "numpy>=1.24,<2.2",
     "scikit-learn>=1.3.0",
     "pandera>=0.19.0",
+    "shap>=0.44.0",
+    "pyyaml>=6.0",
     "xgboost>=2.0.0",
     "lightgbm>=4.1.0",
     "dvc[s3]>=3.0.0",
@@ -55,9 +57,14 @@ dev = [
 where = ["."]
 include = ["LedgerFlow*"]
 
+[tool.setuptools.package-data]
+"LedgerFlow.evaluation" = ["templates/*.j2"]
+
 [tool.ruff]
 target-version = "py310"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -69,8 +76,29 @@ select = [
 ]
 ignore = []
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "benchmark: runtime benchmark tests (Phase 6.3)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+omit = ["*/__main__.py"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+    "pragma: no cover",
+]
 
 [tool.mypy]
 python_version = "3.10"
@@ -84,3 +112,10 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
+# Most scientific-Python deps ship without type stubs; don't fail on them.
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# CLI demo entry points are not part of the typed library surface.
+module = "LedgerFlow.data.loader"
+warn_unused_ignores = false
