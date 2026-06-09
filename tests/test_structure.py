@@ -9,18 +9,24 @@ def test_import_ledgerflow():
 
 
 def test_project_structure():
-    """Test that essential directories exist."""
-    import os
-    
+    """Test that essential source directories exist.
+
+    Only source directories are checked. Runtime artifact directories (data/,
+    models/, reports/curves) are DVC-managed and absent on a clean checkout
+    until `dvc repro` runs, so they are intentionally not required here.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
     required_dirs = [
         "LedgerFlow",
-        "LedgerFlow/features", 
+        "LedgerFlow/data",
+        "LedgerFlow/features",
         "LedgerFlow/evaluation",
-        "data",
         "tests",
         "tests/unit",
         "tests/integration",
     ]
-    
+
     for dir_path in required_dirs:
-        assert os.path.exists(dir_path), f"Directory {dir_path} does not exist"
+        assert (root / dir_path).is_dir(), f"Directory {dir_path} does not exist"
