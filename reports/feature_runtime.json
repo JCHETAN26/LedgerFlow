@@ -1,6 +1,7 @@
 {
-  "n_users": 1890,
+  "n_users": 2000,
   "n_features": 35,
-  "runtime_seconds": 1.1292,
-  "reference_time": "2024-01-30T23:59:14"
+  "runtime_seconds": 10.0777,
+  "decision_time_min": "2024-01-01T00:11:19",
+  "decision_time_max": "2024-01-30T23:59:14"
 }

@@ -1,247 +1,247 @@
 [
   {
     "feature":"purchase_count_30d",
-    "LogisticRegression":0.1225818751,
-    "XGBoost":0.3473509252,
-    "LightGBM":0.3985275632,
-    "mean_importance":0.2894867878
+    "LogisticRegression":0.1173042439,
+    "XGBoost":0.3742126822,
+    "LightGBM":0.3615110148,
+    "mean_importance":0.284342647
   },
   {
     "feature":"purchase_amount_sum_30d",
-    "LogisticRegression":0.1255558824,
-    "XGBoost":0.3290637136,
-    "LightGBM":0.3573697944,
-    "mean_importance":0.2706631301
+    "LogisticRegression":0.0992394627,
+    "XGBoost":0.3053140938,
+    "LightGBM":0.3256751113,
+    "mean_importance":0.2434095559
   },
   {
     "feature":"purchase_amount_std_30d",
-    "LogisticRegression":0.0865353779,
-    "XGBoost":0.0530498661,
-    "LightGBM":0.0488991337,
-    "mean_importance":0.0628281259
-  },
-  {
-    "feature":"purchase_amount_sum_7d",
-    "LogisticRegression":0.0873333563,
-    "XGBoost":0.0262186266,
-    "LightGBM":0.0180858775,
-    "mean_importance":0.0438792868
-  },
-  {
-    "feature":"purchase_amount_max_7d",
-    "LogisticRegression":0.1025413108,
-    "XGBoost":0.0169402231,
-    "LightGBM":0.0067516328,
-    "mean_importance":0.0420777222
+    "LogisticRegression":0.0706339149,
+    "XGBoost":0.0457615405,
+    "LightGBM":0.046889881,
+    "mean_importance":0.0544284455
   },
   {
     "feature":"purchase_amount_min_7d",
-    "LogisticRegression":0.0025086766,
-    "XGBoost":0.0629931465,
-    "LightGBM":0.047540973,
-    "mean_importance":0.037680932
+    "LogisticRegression":0.0110577637,
+    "XGBoost":0.0684536472,
+    "LightGBM":0.0590704532,
+    "mean_importance":0.0461939547
+  },
+  {
+    "feature":"purchase_amount_sum_7d",
+    "LogisticRegression":0.07982759,
+    "XGBoost":0.0206605233,
+    "LightGBM":0.0275697567,
+    "mean_importance":0.0426859567
+  },
+  {
+    "feature":"purchase_amount_max_7d",
+    "LogisticRegression":0.0903961516,
+    "XGBoost":0.0125148939,
+    "LightGBM":0.0083558262,
+    "mean_importance":0.0370889572
   },
   {
     "feature":"purchase_amount_min_30d",
-    "LogisticRegression":0.0566018227,
-    "XGBoost":0.0353530981,
-    "LightGBM":0.0162300525,
-    "mean_importance":0.0360616578
-  },
-  {
-    "feature":"purchase_amount_last_7d",
-    "LogisticRegression":0.0583822045,
-    "XGBoost":0.0208072755,
-    "LightGBM":0.0248730752,
-    "mean_importance":0.0346875184
+    "LogisticRegression":0.0447840821,
+    "XGBoost":0.0251286067,
+    "LightGBM":0.0181290773,
+    "mean_importance":0.0293472554
   },
   {
     "feature":"purchase_amount_mean_30d",
-    "LogisticRegression":0.0601014926,
-    "XGBoost":0.0218645576,
-    "LightGBM":0.0138102805,
-    "mean_importance":0.0319254436
-  },
-  {
-    "feature":"purchase_amount_sum_24h",
-    "LogisticRegression":0.0753378812,
-    "XGBoost":0.0055972361,
-    "LightGBM":0.0,
-    "mean_importance":0.0269783724
-  },
-  {
-    "feature":"purchase_amount_max_30d",
-    "LogisticRegression":0.0558011469,
-    "XGBoost":0.0150071038,
-    "LightGBM":0.005919141,
-    "mean_importance":0.0255757972
-  },
-  {
-    "feature":"purchase_amount_last_30d",
-    "LogisticRegression":0.0157497324,
-    "XGBoost":0.02841869,
-    "LightGBM":0.0318690506,
-    "mean_importance":0.0253458243
-  },
-  {
-    "feature":"purchase_count_7d",
-    "LogisticRegression":0.0330740798,
-    "XGBoost":0.0054705492,
-    "LightGBM":0.0065380289,
-    "mean_importance":0.0150275527
-  },
-  {
-    "feature":"purchase_amount_std_7d",
-    "LogisticRegression":0.003805541,
-    "XGBoost":0.0190949365,
-    "LightGBM":0.0131587742,
-    "mean_importance":0.0120197506
-  },
-  {
-    "feature":"purchase_amount_mean_7d",
-    "LogisticRegression":0.0129781992,
-    "XGBoost":0.00725675,
-    "LightGBM":0.0086865729,
-    "mean_importance":0.0096405074
-  },
-  {
-    "feature":"purchase_amount_min_24h",
-    "LogisticRegression":0.0255107315,
-    "XGBoost":0.0013924461,
-    "LightGBM":0.0017400496,
-    "mean_importance":0.0095477424
-  },
-  {
-    "feature":"purchase_amount_max_24h",
-    "LogisticRegression":0.0259887485,
-    "XGBoost":0.0024011238,
-    "LightGBM":0.0,
-    "mean_importance":0.0094632908
-  },
-  {
-    "feature":"purchase_amount_mean_24h",
-    "LogisticRegression":0.0257602369,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0085867456
-  },
-  {
-    "feature":"purchase_count_24h",
-    "LogisticRegression":0.0096699641,
-    "XGBoost":0.0017197342,
-    "LightGBM":0.0,
-    "mean_importance":0.0037965661
-  },
-  {
-    "feature":"purchase_amount_std_24h",
-    "LogisticRegression":0.0103849124,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0034616375
+    "LogisticRegression":0.052059797,
+    "XGBoost":0.0137945544,
+    "LightGBM":0.0120015065,
+    "mean_importance":0.0259519526
   },
   {
     "feature":"purchase_amount_last_24h",
-    "LogisticRegression":0.0037968271,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.001265609
+    "LogisticRegression":0.0545443259,
+    "XGBoost":0.0074894507,
+    "LightGBM":0.0037656462,
+    "mean_importance":0.0219331409
   },
   {
-    "feature":"purchase_amount_sum_1h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
+    "feature":"purchase_amount_max_30d",
+    "LogisticRegression":0.0314325349,
+    "XGBoost":0.017155109,
+    "LightGBM":0.0087598434,
+    "mean_importance":0.0191158291
+  },
+  {
+    "feature":"purchase_amount_sum_24h",
+    "LogisticRegression":0.018347409,
+    "XGBoost":0.0187419839,
+    "LightGBM":0.0199553154,
+    "mean_importance":0.0190149028
+  },
+  {
+    "feature":"purchase_amount_last_30d",
+    "LogisticRegression":0.0112901385,
+    "XGBoost":0.0164397862,
+    "LightGBM":0.0224706913,
+    "mean_importance":0.0167335387
+  },
+  {
+    "feature":"purchase_amount_min_24h",
+    "LogisticRegression":0.0363631019,
+    "XGBoost":0.009590012,
+    "LightGBM":0.0012511216,
+    "mean_importance":0.0157347452
+  },
+  {
+    "feature":"purchase_amount_mean_7d",
+    "LogisticRegression":0.0079659995,
+    "XGBoost":0.0176024009,
+    "LightGBM":0.0199414989,
+    "mean_importance":0.0151699664
+  },
+  {
+    "feature":"purchase_amount_last_7d",
+    "LogisticRegression":0.0220825224,
+    "XGBoost":0.0093302922,
+    "LightGBM":0.0070825762,
+    "mean_importance":0.0128317969
+  },
+  {
+    "feature":"purchase_count_7d",
+    "LogisticRegression":0.0246819198,
+    "XGBoost":0.0051287757,
+    "LightGBM":0.0068441859,
+    "mean_importance":0.0122182938
   },
   {
     "feature":"purchase_amount_last_6h",
-    "LogisticRegression":0.0,
+    "LogisticRegression":0.0313167337,
     "XGBoost":0.0,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0104389112
+  },
+  {
+    "feature":"purchase_amount_mean_24h",
+    "LogisticRegression":0.0242393513,
+    "XGBoost":0.0019384657,
+    "LightGBM":0.0027760243,
+    "mean_importance":0.0096512805
+  },
+  {
+    "feature":"purchase_amount_max_24h",
+    "LogisticRegression":0.0178955153,
+    "XGBoost":0.0022611697,
+    "LightGBM":0.0069622764,
+    "mean_importance":0.0090396538
   },
   {
     "feature":"purchase_amount_max_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
+    "LogisticRegression":0.0185730043,
+    "XGBoost":0.0021580986,
+    "LightGBM":0.0057326485,
+    "mean_importance":0.0088212505
   },
   {
-    "feature":"purchase_amount_min_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
+    "feature":"purchase_count_24h",
+    "LogisticRegression":0.02414372,
+    "XGBoost":0.00159078,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0085781666
   },
   {
     "feature":"purchase_amount_std_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
+    "LogisticRegression":0.0240724237,
+    "XGBoost":0.000343685,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0081387029
   },
   {
-    "feature":"purchase_amount_mean_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
+    "feature":"purchase_amount_std_7d",
+    "LogisticRegression":0.0047529078,
+    "XGBoost":0.0087487642,
+    "LightGBM":0.0084866292,
+    "mean_importance":0.0073294337
   },
   {
     "feature":"purchase_amount_sum_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
+    "LogisticRegression":0.0034237483,
+    "XGBoost":0.0055397376,
+    "LightGBM":0.0118979474,
+    "mean_importance":0.0069538111
+  },
+  {
+    "feature":"purchase_amount_mean_6h",
+    "LogisticRegression":0.0168026225,
+    "XGBoost":0.0014932466,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0060986231
+  },
+  {
+    "feature":"purchase_amount_min_6h",
+    "LogisticRegression":0.0148759627,
+    "XGBoost":0.0007538577,
+    "LightGBM":0.0024556029,
+    "mean_importance":0.0060284744
   },
   {
     "feature":"purchase_count_6h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
+    "LogisticRegression":0.0097544049,
+    "XGBoost":0.0013718714,
+    "LightGBM":0.0012888776,
+    "mean_importance":0.0041383847
+  },
+  {
+    "feature":"purchase_amount_sum_1h",
+    "LogisticRegression":0.0023033538,
+    "XGBoost":0.0013724501,
+    "LightGBM":0.0061981739,
+    "mean_importance":0.0032913259
   },
   {
     "feature":"purchase_amount_last_1h",
-    "LogisticRegression":0.0,
+    "LogisticRegression":0.0092881308,
     "XGBoost":0.0,
     "LightGBM":0.0,
-    "mean_importance":0.0
-  },
-  {
-    "feature":"purchase_amount_max_1h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
-  },
-  {
-    "feature":"purchase_amount_min_1h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
-  },
-  {
-    "feature":"purchase_amount_std_1h",
-    "LogisticRegression":0.0,
-    "XGBoost":0.0,
-    "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0030960436
   },
   {
     "feature":"purchase_amount_mean_1h",
-    "LogisticRegression":0.0,
+    "LogisticRegression":0.0051205785,
     "XGBoost":0.0,
+    "LightGBM":0.0035803666,
+    "mean_importance":0.002900315
+  },
+  {
+    "feature":"purchase_amount_min_1h",
+    "LogisticRegression":0.0051298175,
+    "XGBoost":0.0023121727,
+    "LightGBM":0.0007389179,
+    "mean_importance":0.0027269694
+  },
+  {
+    "feature":"purchase_amount_std_24h",
+    "LogisticRegression":0.0068686429,
+    "XGBoost":0.001200703,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.002689782
+  },
+  {
+    "feature":"purchase_amount_max_1h",
+    "LogisticRegression":0.00511024,
+    "XGBoost":0.0012328756,
+    "LightGBM":0.0006090293,
+    "mean_importance":0.0023173816
   },
   {
     "feature":"purchase_count_1h",
-    "LogisticRegression":0.0,
+    "LogisticRegression":0.0037182429,
+    "XGBoost":0.0003637266,
+    "LightGBM":0.0,
+    "mean_importance":0.0013606565
+  },
+  {
+    "feature":"purchase_amount_std_1h",
+    "LogisticRegression":0.0005996413,
     "XGBoost":0.0,
     "LightGBM":0.0,
-    "mean_importance":0.0
+    "mean_importance":0.0001998804
   }
 ]
