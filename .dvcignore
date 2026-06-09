@@ -1,3 +1,10 @@
 # Add patterns of files dvc should ignore, which could improve
 # the performance. Learn more at
 # https://dvc.org/doc/user-guide/dvcignore
+
+# Compiled bytecode and caches must not affect dependency hashes — otherwise
+# running tests (which regenerates .pyc) spuriously dirties the featurize stage.
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/

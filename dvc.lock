@@ -29,9 +29,9 @@ stages:
     deps:
     - path: LedgerFlow/features
       hash: md5
-      md5: 1b839ae342f0842d0630ddca70133b42.dir
-      size: 25018
-      nfiles: 8
+      md5: e7ceb68d16c9fbe1f89e525a60b3306b.dir
+      size: 8574
+      nfiles: 3
     - path: LedgerFlow/pipeline.py
       hash: md5
       md5: f4b40a934704fa0e2aeaf0d327faf00b
@@ -55,8 +55,8 @@ stages:
       size: 202243
     - path: reports/feature_runtime.json
       hash: md5
-      md5: a3a8b39f198458ad03a7bb3bd6b1f6f4
-      size: 112
+      md5: 68a14df6bdc2debfc7f256d1defaaf5a
+      size: 113
   split:
     cmd: python -m LedgerFlow.data.splitter
     deps:
