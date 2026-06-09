@@ -69,6 +69,35 @@ class TestPostgresLoaderUnit:
             with pytest.raises(ValueError, match="LEDGERFLOW_DB_NAME"):
                 get_database_connection()
     
+    def test_missing_user_raises(self):
+        from LedgerFlow.data.loader import get_database_connection
+
+        env = {"LEDGERFLOW_DB_NAME": "db"}  # user & password absent
+        with patch.dict(os.environ, env, clear=True):
+            with pytest.raises(ValueError, match="LEDGERFLOW_DB_USER"):
+                get_database_connection()
+
+    def test_missing_password_raises(self):
+        from LedgerFlow.data.loader import get_database_connection
+
+        env = {"LEDGERFLOW_DB_NAME": "db", "LEDGERFLOW_DB_USER": "u"}
+        with patch.dict(os.environ, env, clear=True):
+            with pytest.raises(ValueError, match="LEDGERFLOW_DB_PASSWORD"):
+                get_database_connection()
+
+    def test_empty_result_warns_and_returns_empty(self):
+        from LedgerFlow.data.loader import load_events_from_postgres
+
+        mock_engine = MagicMock()
+        with patch("pandas.read_sql") as mock_read_sql:
+            mock_read_sql.return_value = iter([])  # no chunks
+            with patch(
+                "LedgerFlow.data.loader.get_database_connection",
+                return_value=mock_engine,
+            ):
+                result = load_events_from_postgres(table_name="t")
+        assert result.empty
+
     def test_get_database_connection_success(self):
         """Test successful database connection creation."""
         from LedgerFlow.data.loader import get_database_connection
@@ -82,10 +111,10 @@ class TestPostgresLoaderUnit:
         }
         
         with patch.dict(os.environ, test_env):
-            with patch("sqlalchemy.create_engine") as mock_create_engine:
+            with patch("LedgerFlow.data.loader.create_engine") as mock_create_engine:
                 mock_engine = Mock()
                 mock_create_engine.return_value = mock_engine
-                
+
                 engine = get_database_connection()
                 
                 # Verify engine was created with correct URL
@@ -108,14 +137,14 @@ class TestPostgresLoaderUnit:
             "session_id": ["sess_001", "sess_002"],
         })
         
-        # Mock engine and connection
-        mock_engine = Mock()
-        mock_connection = Mock()
+        # Mock engine and connection (MagicMock supports the `with` protocol)
+        mock_engine = MagicMock()
+        mock_connection = MagicMock()
         mock_engine.connect.return_value.__enter__.return_value = mock_connection
         
-        # Mock pandas read_sql to return our test data
+        # Mock pandas read_sql to return our test data as a single chunk
         with patch("pandas.read_sql") as mock_read_sql:
-            mock_read_sql.return_value = mock_data
+            mock_read_sql.return_value = iter([mock_data])
             
             with patch("LedgerFlow.data.loader.get_database_connection") as mock_get_conn:
                 mock_get_conn.return_value = mock_engine
@@ -180,7 +209,7 @@ class TestPostgresLoaderUnit:
             "event_id": [f"evt_{i:03d}" for i in range(10)],
             "user_id": ["user_001"] * 5 + ["user_002"] * 3 + ["user_003"] * 2,
             "event_type": ["purchase"] * 10,
-            "event_timestamp": pd.date_range("2024-01-01", periods=10, freq="H"),
+            "event_timestamp": pd.date_range("2024-01-01", periods=10, freq="h"),
             "amount": [10.0] * 10,
             "session_id": [f"sess_{i:03d}" for i in range(10)],
         })
@@ -207,7 +236,7 @@ class TestPostgresLoaderUnit:
         }
         
         with patch.dict(os.environ, test_env):
-            with patch("sqlalchemy.create_engine") as mock_create_engine:
+            with patch("LedgerFlow.data.loader.create_engine") as mock_create_engine:
                 mock_create_engine.side_effect = Exception("Connection failed")
                 
                 with pytest.raises(Exception, match="Connection failed"):

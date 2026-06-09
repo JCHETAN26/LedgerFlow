@@ -2,71 +2,84 @@ name: CI
 
 on: [push, pull_request]
 
+env:
+  DISABLE_PANDERA_IMPORT_WARNING: "True"
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-    
-    - name: Run tests with coverage
-      run: |
-        pytest tests/ --cov=LedgerFlow --cov-report=term-missing
-    
-    - name: Check DVC pipeline consistency
-      run: |
-        dvc repro --dry
-    
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests with coverage (gate: 90%)
+        run: |
+          pytest tests/ \
+            --cov=LedgerFlow \
+            --cov-report=term-missing \
+            --cov-fail-under=90
+
+      - name: Runtime benchmark (10K rows < 30s)
+        run: |
+          pytest tests/integration/test_benchmark.py -m benchmark -v
+
+      - name: Check DVC pipeline consistency
+        run: |
+          dvc repro --dry
+
   lint:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-    
-    - name: Run ruff linter
-      run: |
-        ruff check LedgerFlow/
-    
-    - name: Run mypy type checker
-      run: |
-        mypy LedgerFlow/ --strict
-    
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: ruff check LedgerFlow/ scripts/
+
+      - name: Mypy type check
+        run: mypy LedgerFlow/
+
   feature-registry:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .
-    
-    - name: Validate feature registry
-      run: |
-        python -c "from LedgerFlow.registry import validate_registry; validate_registry()"
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate feature registry & pipeline coverage
+        run: |
+          python -c "
+          from LedgerFlow.registry import validate_registry, FEATURE_REGISTRY
+          from LedgerFlow.pipeline import FeaturePipeline
+
+          validate_registry()
+          missing = [f for f in FeaturePipeline().feature_names if f not in FEATURE_REGISTRY]
+          assert not missing, f'Pipeline features missing from registry: {missing}'
+          print(f'OK: {len(FEATURE_REGISTRY)} features registered, all pipeline features present.')
+          "

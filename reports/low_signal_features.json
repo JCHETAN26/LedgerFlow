@@ -1,0 +1,19 @@
+{
+  "threshold": 0.001,
+  "features": [
+    "purchase_amount_sum_1h",
+    "purchase_amount_last_6h",
+    "purchase_amount_max_6h",
+    "purchase_amount_min_6h",
+    "purchase_amount_std_6h",
+    "purchase_amount_mean_6h",
+    "purchase_amount_sum_6h",
+    "purchase_count_6h",
+    "purchase_amount_last_1h",
+    "purchase_amount_max_1h",
+    "purchase_amount_min_1h",
+    "purchase_amount_std_1h",
+    "purchase_amount_mean_1h",
+    "purchase_count_1h"
+  ]
+}

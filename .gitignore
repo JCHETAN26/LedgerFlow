@@ -23,6 +23,9 @@ MANIFEST
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Virtual environments
 .env
@@ -33,17 +36,17 @@ ENV/
 env.bak/
 venv.bak/
 
-# DVC
-.dvc/
-.dvcignore
+# DVC internals — track .dvc/config and dvc.lock, ignore cache/tmp.
+/.dvc/cache
+/.dvc/tmp
+/.dvc/config.local
 
-# Data files (except for tracking with DVC)
-data/
-models/
-reports/
-*.parquet
-*.csv
-*.json
+# DVC-managed artifacts — reconstructed via `dvc repro` / `dvc pull`.
+# The small metrics JSONs and the recommendation memo under reports/ are
+# cache:false outputs and ARE committed (so the evaluation is visible in git).
+/data/
+/models/
+/reports/curves/
 
 # Notebooks
 .ipynb_checkpoints/
@@ -67,3 +70,4 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
+/models
