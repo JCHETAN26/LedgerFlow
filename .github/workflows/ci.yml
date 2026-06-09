@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run tests with coverage (gate: 90%)
+      - name: "Run tests with coverage (gate 90%)"
         run: |
           pytest tests/ \
             --cov=LedgerFlow \
@@ -32,9 +32,14 @@ jobs:
         run: |
           pytest tests/integration/test_benchmark.py -m benchmark -v
 
-      - name: Check DVC pipeline consistency
+      - name: Reproduce DVC pipeline from clean checkout
+        # Real repro (not --dry): the synthetic `ingest` stage makes the whole
+        # pipeline self-contained, so this validates every stage end-to-end and
+        # proves reproducibility from a fresh checkout. --dry would fail here
+        # because intermediate outputs are DVC-managed and absent on checkout.
         run: |
-          dvc repro --dry
+          dvc repro
+          dvc status
 
   integration-db:
     runs-on: ubuntu-latest
