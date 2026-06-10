@@ -55,6 +55,9 @@ notebooks = [
     "nbformat>=5.0",
     "ipykernel>=6.0",
 ]
+dashboard = [
+    "streamlit>=1.30",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/JCHETAN26/LedgerFlow"

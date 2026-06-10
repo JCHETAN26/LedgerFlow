@@ -82,6 +82,18 @@ dvc metrics show
 cat reports/recommendation_memo.md
 ```
 
+### Dashboard
+
+An interactive Streamlit dashboard visualises the pipeline outputs (model
+comparison, ROC/PR curves, feature importance, data distributions) and includes
+a **live-scoring** tab that scores a single user through the *same* point-in-time
+feature code used in training — a direct demo of the no-skew design.
+
+```bash
+pip install -e ".[dashboard]"
+streamlit run dashboard/app.py        # run `dvc repro` first so artifacts exist
+```
+
 ## Development
 
 ### Adding a New Feature (< 20 minutes)
