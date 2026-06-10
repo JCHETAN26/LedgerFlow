@@ -1,4 +1,4 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = s3://LedgerFlow-artifacts/
+    url = s3://ledgerflow-artifacts-049000283645/
