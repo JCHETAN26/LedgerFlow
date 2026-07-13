@@ -8,6 +8,17 @@ features:
   time_windows: [1h, 6h, 24h, 7d, 30d]
   aggregations: [count, sum, mean, std, min, max, last]
 
+# Sparkov fraud-dataset ingest (the default `ingest` source).
+# Download fraudTrain.csv from kaggle.com/datasets/kartik2112/fraud-detection,
+# then set csv_path here OR export LEDGERFLOW_SPARKOV_CSV=/path/to/fraudTrain.csv.
+sparkov:
+  csv_path: null
+  label_horizon_days: 1   # snapshot is positive if fraud occurs within N periods
+  snapshot_freq: "W"      # one snapshot per (card, active week); "D" for daily
+                          # (daily = ~400K snapshots over 983 cards: much slower,
+                          # largely redundant between adjacent days — weekly keeps
+                          # every card + leakage-safety at ~75K rows)
+
 evaluation:
   test_size: 0.2
   val_size: 0.1

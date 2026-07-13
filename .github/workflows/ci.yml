@@ -32,14 +32,19 @@ jobs:
         run: |
           pytest tests/integration/test_benchmark.py -m benchmark -v
 
-      - name: Reproduce DVC pipeline from clean checkout
-        # Real repro (not --dry): the synthetic `ingest` stage makes the whole
-        # pipeline self-contained, so this validates every stage end-to-end and
-        # proves reproducibility from a fresh checkout. --dry would fail here
-        # because intermediate outputs are DVC-managed and absent on checkout.
+      - name: Pipeline end-to-end smoke test (synthetic fallback source)
+        # The DVC `ingest` stage now defaults to the real Sparkov dataset, whose
+        # CSV is not available in CI. To keep every downstream stage validated on
+        # a clean checkout, CI runs the pipeline through the self-contained
+        # synthetic fallback (same two raw outputs, no download). Real DVC
+        # reproducibility against Sparkov runs locally / via `dvc pull` once the
+        # Sparkov-derived artifacts have been pushed to the S3 remote.
         run: |
-          dvc repro
-          dvc status
+          python -m LedgerFlow.data.synthetic      # fallback ingest (no Sparkov CSV)
+          python -m LedgerFlow.pipeline            # featurize
+          python -m LedgerFlow.data.splitter       # split
+          python -m LedgerFlow.evaluation.compare  # evaluate
+          python -m LedgerFlow.evaluation.report   # report
 
   integration-db:
     runs-on: ubuntu-latest

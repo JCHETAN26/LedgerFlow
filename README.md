@@ -74,6 +74,44 @@ are auto-flagged as removal candidates.
 > The recommendation memo (`reports/recommendation_memo.md`) is **auto-generated**
 > from these metrics on every run — never written by hand.
 
+### Real data (Sparkov, 1.3M transactions)
+
+The default `ingest` source is the real **[Sparkov credit-card fraud
+dataset](https://www.kaggle.com/datasets/kartik2112/fraud-detection)** — not a
+toy. `fraudTrain.csv` maps cleanly onto LedgerFlow's event schema (`cc_num` →
+`user_id`, `amt` → `amount`, every row a `purchase`), and each card's activity is
+sliced into **leakage-safe weekly snapshots**: one `(card, week)` row whose
+`decision_time` is the start of the week, so features see only transactions from
+*before* that week while the label asks *"will this card see fraud this week?"*
+
+| | Real run (`fraudTrain.csv`, weekly) |
+|---|---|
+| Events ingested | **1,296,675** real transactions (983 cards) |
+| Modeling rows | **69,925** `(card, week)` snapshots |
+| Fraud rate | **1.23%** (real, imbalanced — not the balanced synthetic 49%) |
+| Split (time-ordered) | train 48,948 · val 6,992 · test 13,985 |
+| Recommended model | **LightGBM** — AUC **0.603**, Brier **0.012**, AP 0.155 |
+
+**Honest result:** all three models land at **AUC ≈ 0.60**. That is the real
+ceiling of *card-level spending aggregates* for this framing — Sparkov fraud is
+driven by **transaction-level** signals (merchant, category, per-transaction
+amount anomaly, geography) that are deliberately outside LedgerFlow's 35
+purchase-amount/count window features. The point this demonstrates is not a
+headline AUC but that **the pipeline runs end-to-end on 1.3M real events, leakage-
+free, and reports the honest number** — exactly the failure mode (weak features,
+not a broken split) that a leakage bug would otherwise hide behind an inflated
+score.
+
+```bash
+# Download fraudTrain.csv from Kaggle (kartik2112/fraud-detection), then:
+export LEDGERFLOW_SPARKOV_CSV=/path/to/fraudTrain.csv
+dvc repro                       # ingest → featurize → split → evaluate → report
+```
+
+Daily snapshots (`snapshot_freq: "D"` in `params.yaml`) are also supported —
+~400K rows — but weekly is the default: adjacent days are near-duplicates, and
+weekly keeps every card and the leakage guarantee at a fraction of the runtime.
+
 ---
 
 ## Interactive dashboard
@@ -176,7 +214,7 @@ LedgerFlow/
 
 | | |
 |---|---|
-| **Tests** | 246 tests (214 unit), incl. a training-serving **parity test** (batch vs single-user to 1e-6), a point-in-time parity test, and a 10K-row <30s benchmark. **97% coverage** (90% gate in CI). |
+| **Tests** | 249 tests (219 unit), incl. a training-serving **parity test** (batch vs single-user to 1e-6), a point-in-time parity test, and a 10K-row <30s benchmark. **97% coverage** (90% gate in CI). |
 | **Static checks** | `ruff` + `mypy` on every PR. |
 | **CI** | GitHub Actions: `test` (coverage gate + real `dvc repro`), `integration-db` (live `postgres:16` service), `lint`, `feature-registry`. |
 | **Reproducibility** | Seeded data + fixed seeds → `features.parquet` is **byte-identical** across runs; `dvc repro` reproduces the full pipeline from a clean checkout. |

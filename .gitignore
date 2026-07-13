@@ -48,6 +48,9 @@ venv.bak/
 /models/
 /reports/curves/
 
+# Raw Sparkov CSVs (downloaded from Kaggle, ~500MB) — never committed.
+/Dataset/
+
 # Notebooks
 .ipynb_checkpoints/
 

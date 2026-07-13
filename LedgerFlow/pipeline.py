@@ -139,6 +139,62 @@ class FeaturePipeline:
         out.index.name = "user_id"
         return out[self.feature_names].fillna(0.0)
 
+    def transform_samples(
+        self,
+        df: pd.DataFrame,
+        samples: pd.DataFrame,
+        n_jobs: int = -1,
+    ) -> pd.DataFrame:
+        """Point-in-time features for arbitrary decision points.
+
+        Unlike :meth:`transform_point_in_time` (which assumes one row per user),
+        this supports **multiple decision points per user** — e.g. a daily
+        snapshot per card — without duplicating the event log. Work is
+        parallelised **one task per user** (not per sample): each card's history
+        is shipped to a worker once, which then computes all of that card's
+        decision points through the same :meth:`transform_single` path. This
+        keeps the batch-vs-serving parity guarantee while avoiding re-serialising
+        a card's history for every snapshot (which OOMs at ~400K daily
+        snapshots). The result is indexed by ``sample_id`` in input order.
+
+        Args:
+            df: Event log for many users.
+            samples: DataFrame with columns ``sample_id``, ``user_id``,
+                ``decision_time``. A user may appear in many rows, each with a
+                different ``decision_time``.
+            n_jobs: joblib worker count across users.
+
+        Returns:
+            DataFrame indexed by ``sample_id`` (one row per sample), one column
+            per feature, null-free.
+        """
+        required = {"sample_id", "user_id", "decision_time"}
+        missing = required - set(samples.columns)
+        if missing:
+            raise ValueError(f"samples is missing columns: {sorted(missing)}")
+
+        groups = dict(tuple(df.groupby("user_id")))
+        # One task per card: hand the worker that card's whole history once plus
+        # all its (sample_id, decision_time) pairs.
+        per_user = [
+            (uid, sub["sample_id"].tolist(), sub["decision_time"].tolist())
+            for uid, sub in samples.groupby("user_id", sort=False)
+        ]
+
+        results = joblib.Parallel(n_jobs=n_jobs)(
+            joblib.delayed(self._user_rows)(groups.get(uid), sample_ids, times)
+            for uid, sample_ids, times in per_user
+        )
+
+        rows: dict[str, dict] = {}
+        for res in results:
+            rows.update(res)
+        out = pd.DataFrame.from_dict(rows, orient="index")
+        # Restore input order (groupby reorders by user).
+        out = out.reindex(samples["sample_id"].tolist())
+        out.index.name = "sample_id"
+        return out[self.feature_names].fillna(0.0)
+
     def _user_row(
         self, user_history: pd.DataFrame | None, reference_time: pd.Timestamp
     ) -> dict:
@@ -146,6 +202,26 @@ class FeaturePipeline:
         if user_history is None or user_history.empty:
             return dict.fromkeys(self.feature_names, 0.0)
         return self.transform_single(user_history, reference_time)
+
+    def _user_rows(
+        self,
+        user_history: pd.DataFrame | None,
+        sample_ids: list,
+        times: list,
+    ) -> dict[str, dict]:
+        """Feature dicts for many decision points of ONE user (joblib worker).
+
+        Computes every ``(sample_id, decision_time)`` for a single card from one
+        in-memory copy of its history, each through :meth:`transform_single` so
+        parity with the serving path is preserved.
+        """
+        if user_history is None or user_history.empty:
+            zero = dict.fromkeys(self.feature_names, 0.0)
+            return {sid: dict(zero) for sid in sample_ids}
+        return {
+            sid: self.transform_single(user_history, pd.Timestamp(t))
+            for sid, t in zip(sample_ids, times, strict=True)
+        }
 
     def transform_single(
         self,
@@ -198,25 +274,47 @@ def featurize_main(
     events = pd.read_parquet(events_path)
     labels = pd.read_parquet(labels_path)
 
-    # Each user is featurized as of their own decision_time (point-in-time).
-    reference_times = labels.set_index("user_id")["decision_time"]
-    logger.info(
-        "Featurizing %d events for %d users point-in-time (decision_time %s..%s)",
-        len(events),
-        labels["user_id"].nunique(),
-        reference_times.min(),
-        reference_times.max(),
-    )
-
     pipeline = FeaturePipeline()
 
+    # Two label shapes are supported, both featurized point-in-time through the
+    # same compute() path:
+    #   * one row per user (synthetic / production) -> key on user_id
+    #   * many snapshots per user with a sample_id (e.g. Sparkov daily) -> key
+    #     on sample_id, so a card can contribute many (decision_time) rows
+    #     without duplicating its event log.
+    snapshot_mode = "sample_id" in labels.columns
+    key = "sample_id" if snapshot_mode else "user_id"
+
     start = time.perf_counter()
-    features = pipeline.transform_point_in_time(events, reference_times)
+    if snapshot_mode:
+        logger.info(
+            "Featurizing %d events for %d samples across %d users point-in-time "
+            "(decision_time %s..%s)",
+            len(events),
+            len(labels),
+            labels["user_id"].nunique(),
+            labels["decision_time"].min(),
+            labels["decision_time"].max(),
+        )
+        features = pipeline.transform_samples(
+            events, labels[["sample_id", "user_id", "decision_time"]]
+        )
+    else:
+        reference_times = labels.set_index("user_id")["decision_time"]
+        logger.info(
+            "Featurizing %d events for %d users point-in-time "
+            "(decision_time %s..%s)",
+            len(events),
+            labels["user_id"].nunique(),
+            reference_times.min(),
+            reference_times.max(),
+        )
+        features = pipeline.transform_point_in_time(events, reference_times)
     runtime_seconds = time.perf_counter() - start
 
-    # Labels define the user universe: a user with no purchases at all has an
-    # all-zero feature row rather than being dropped from training.
-    full = labels.set_index("user_id").join(features, how="left")
+    # Labels define the row universe: a user/sample with no purchases in any
+    # window gets an all-zero feature row rather than being dropped.
+    full = labels.set_index(key).join(features, how="left")
     full[pipeline.feature_names] = full[pipeline.feature_names].fillna(0.0)
     full["label"] = full["label"].fillna(0).astype("int64")
 
@@ -225,11 +323,13 @@ def featurize_main(
     full.to_parquet(out_path, engine="pyarrow", compression="snappy")
 
     metrics = {
-        "n_users": int(len(features)),
+        "n_rows": int(len(features)),
+        "n_users": int(labels["user_id"].nunique()),
         "n_features": int(len(pipeline.feature_names)),
+        "snapshot_mode": snapshot_mode,
         "runtime_seconds": round(runtime_seconds, 4),
-        "decision_time_min": reference_times.min().isoformat(),
-        "decision_time_max": reference_times.max().isoformat(),
+        "decision_time_min": labels["decision_time"].min().isoformat(),
+        "decision_time_max": labels["decision_time"].max().isoformat(),
     }
     metrics_file = Path(metrics_path)
     metrics_file.parent.mkdir(parents=True, exist_ok=True)
