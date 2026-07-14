@@ -154,21 +154,48 @@ python scripts/new_feature.py --name session_count_24h --window 24h \
 
 ## Quick start
 
+LedgerFlow ships a `ledgerflow` command — the fastest way to see it work:
+
 ```bash
 # 1. Install (Python 3.10+)
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-# 2. Reproduce the whole pipeline offline (synthetic ingest — no database needed)
-dvc repro                          # ingest → featurize → split → evaluate → report
+# 2. Run the whole pipeline on a zero-download synthetic dataset
+ledgerflow run --source synthetic     # ingest → featurize → split → evaluate → report
 
-# 3. See the results
+# 3. Or run it on the real Sparkov fraud data (download fraudTrain.csv from Kaggle)
+ledgerflow run --events /path/to/fraudTrain.csv --snapshot W
+
+# 4. Score a single card with the same point-in-time feature code used in training
+ledgerflow score --user cc_1234
+
+# 5. Explore everything in the dashboard
+ledgerflow dashboard
+```
+
+`ledgerflow run` prints a live recommendation table:
+
+```
+[4/5] Evaluate (LogReg · XGBoost · LightGBM)
+
+  Recommended: LightGBM
+  model                      AUC    Brier  AvgPrec
+  LogisticRegression       0.796    0.196    0.800
+  XGBoost                  0.848    0.155    0.841
+→ LightGBM                 0.871    0.144    0.873
+```
+
+<details>
+<summary>Reproduce via DVC instead (full lineage / S3 remote)</summary>
+
+```bash
+dvc repro                          # same stages, recorded in dvc.lock
 dvc metrics show
 cat reports/recommendation_memo.md
-
-# 4. Regenerate the README charts (optional)
-pip install -e ".[notebooks]" && python scripts/make_readme_assets.py
+pip install -e ".[notebooks]" && python scripts/make_readme_assets.py   # README charts
 ```
+</details>
 
 > **Data source:** the DVC `ingest` stage uses a deterministic synthetic generator
 > (`LedgerFlow.data.synthetic`) so `dvc repro` and CI run without a database. In
@@ -182,6 +209,7 @@ pip install -e ".[notebooks]" && python scripts/make_readme_assets.py
 ```
 LedgerFlow/
 ├── LedgerFlow/
+│   ├── cli.py               # `ledgerflow` command (run / score / dashboard / …)
 │   ├── params.py            # params.yaml loader
 │   ├── registry.py          # feature catalog + metadata
 │   ├── pipeline.py          # FeaturePipeline (batch / point-in-time / single-user)
