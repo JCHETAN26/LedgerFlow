@@ -59,6 +59,9 @@ dashboard = [
     "streamlit>=1.30",
 ]
 
+[project.scripts]
+ledgerflow = "LedgerFlow.cli:main"
+
 [project.urls]
 "Homepage" = "https://github.com/JCHETAN26/LedgerFlow"
 "Bug Tracker" = "https://github.com/JCHETAN26/LedgerFlow/issues"

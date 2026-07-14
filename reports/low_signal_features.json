@@ -1,6 +1,4 @@
 {
   "threshold": 0.001,
-  "features": [
-    "purchase_amount_std_1h"
-  ]
+  "features": []
 }

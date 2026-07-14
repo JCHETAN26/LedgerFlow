@@ -54,7 +54,8 @@ RawEventSchema = DataFrameSchema({
         nullable=False,
         description="Timestamp when the event occurred",
         checks=[
-            Check.greater_than_or_equal_to(pd.Timestamp("2020-01-01")),
+            # Lower bound covers the Sparkov fraud dataset, which starts 2019-01.
+            Check.greater_than_or_equal_to(pd.Timestamp("2019-01-01")),
             Check.less_than_or_equal_to(pd.Timestamp("2030-12-31")),
         ]
     ),

@@ -1,29 +1,29 @@
 schema: '2.0'
 stages:
   ingest:
-    cmd: python -m LedgerFlow.data.synthetic
+    cmd: python -m LedgerFlow.data.sparkov
     deps:
-    - path: LedgerFlow/data/synthetic.py
+    - path: LedgerFlow/data/sparkov.py
       hash: md5
-      md5: 1049b1f278f817b224d4c0d56ff84f4d
-      size: 6033
+      md5: 01efd86a4c290a09bcfe22fdadd35691
+      size: 9543
     - path: LedgerFlow/data/validators.py
       hash: md5
-      md5: 8bc09f3054fbc29c82e4a6e208ffc686
-      size: 8870
+      md5: 794226849dc138991864d5ac89cb25f7
+      size: 8952
     - path: params.yaml
       hash: md5
-      md5: 65c9e9331bc0af58d6101158bf436acf
-      size: 299
+      md5: 215fa2f1678dbc77e28c15991afd1822
+      size: 949
     outs:
     - path: data/raw/events.parquet
       hash: md5
-      md5: 1f7399258cd13f55b06fefb3197c25bb
-      size: 716735
+      md5: d22dc468bc44ff9691f6801b53eb6963
+      size: 55900211
     - path: data/raw/labels.parquet
       hash: md5
-      md5: 67ba4f6818a01d7f3eec79e6ccb258f2
-      size: 33793
+      md5: 175555d486e2d996b59c103ef0b8fd6a
+      size: 1094370
   featurize:
     cmd: python -m LedgerFlow.pipeline
     deps:
@@ -34,29 +34,29 @@ stages:
       nfiles: 3
     - path: LedgerFlow/pipeline.py
       hash: md5
-      md5: cd5ecfbe59dec0980fb31625ce5b4706
-      size: 9594
+      md5: d6d927c4915b95c296c6cd695e59f28c
+      size: 13900
     - path: LedgerFlow/registry.py
       hash: md5
       md5: a961b741c03e46d14b9595fb133b7ed5
       size: 3360
     - path: data/raw/events.parquet
       hash: md5
-      md5: 1f7399258cd13f55b06fefb3197c25bb
-      size: 716735
+      md5: d22dc468bc44ff9691f6801b53eb6963
+      size: 55900211
     - path: data/raw/labels.parquet
       hash: md5
-      md5: 67ba4f6818a01d7f3eec79e6ccb258f2
-      size: 33793
+      md5: 175555d486e2d996b59c103ef0b8fd6a
+      size: 1094370
     outs:
     - path: data/processed/features.parquet
       hash: md5
-      md5: a2cc740e3dad3ecd6c91d2b45db8ebc5
-      size: 269926
+      md5: 7b79f467468d028a3dbea7baab1a1571
+      size: 9660604
     - path: reports/feature_runtime.json
       hash: md5
-      md5: c9f36060f407ce1954dfb2b37801aefb
-      size: 163
+      md5: 573d37e9ec5212ca1873825a97b4c7f0
+      size: 206
   split:
     cmd: python -m LedgerFlow.data.splitter
     deps:
@@ -70,25 +70,25 @@ stages:
       size: 850
     - path: data/processed/features.parquet
       hash: md5
-      md5: a2cc740e3dad3ecd6c91d2b45db8ebc5
-      size: 269926
+      md5: 7b79f467468d028a3dbea7baab1a1571
+      size: 9660604
     - path: params.yaml
       hash: md5
-      md5: 65c9e9331bc0af58d6101158bf436acf
-      size: 299
+      md5: 215fa2f1678dbc77e28c15991afd1822
+      size: 949
     outs:
     - path: data/splits/test.parquet
       hash: md5
-      md5: 8bbfd4ce2339796b23b0bbccf90bf4a8
-      size: 78334
+      md5: 4a15a78a03cc44ae412089b43a4d5a53
+      size: 2162602
     - path: data/splits/train.parquet
       hash: md5
-      md5: 8662c1ee64a276db07a1e010e091e96f
-      size: 195132
+      md5: dd3674a6cee6a664eff52a3075256d11
+      size: 6989719
     - path: data/splits/val.parquet
       hash: md5
-      md5: 4dcbee924ec17df9b675a9c7cd373fd2
-      size: 53585
+      md5: 60e8d384f794be2e8bd7517f5dc7aa11
+      size: 1096668
   evaluate:
     cmd: python -m LedgerFlow.evaluation.compare
     deps:
@@ -106,43 +106,43 @@ stages:
       size: 5386
     - path: data/splits/test.parquet
       hash: md5
-      md5: 8bbfd4ce2339796b23b0bbccf90bf4a8
-      size: 78334
+      md5: 4a15a78a03cc44ae412089b43a4d5a53
+      size: 2162602
     - path: data/splits/train.parquet
       hash: md5
-      md5: 8662c1ee64a276db07a1e010e091e96f
-      size: 195132
+      md5: dd3674a6cee6a664eff52a3075256d11
+      size: 6989719
     - path: data/splits/val.parquet
       hash: md5
-      md5: 4dcbee924ec17df9b675a9c7cd373fd2
-      size: 53585
+      md5: 60e8d384f794be2e8bd7517f5dc7aa11
+      size: 1096668
     - path: params.yaml
       hash: md5
-      md5: 65c9e9331bc0af58d6101158bf436acf
-      size: 299
+      md5: 215fa2f1678dbc77e28c15991afd1822
+      size: 949
     outs:
     - path: models
       hash: md5
-      md5: ed87c6664ec9e79f8f3cff2a137bf050.dir
-      size: 252339
+      md5: 42b4ac993b0cf341c8272df52b10dc08.dir
+      size: 331030
       nfiles: 3
     - path: reports/curves
       hash: md5
-      md5: 39d540851cf515db75425aefa284e7f7.dir
-      size: 60911
+      md5: ed77045f203cd6d4cc0744e66146ac82.dir
+      size: 1760123
       nfiles: 6
     - path: reports/eval_metrics.json
       hash: md5
-      md5: b2603a23fa1f9bfd8490404ca4648080
-      size: 963
+      md5: daf56781ddcce0c606a4d5fb31fd3111
+      size: 976
     - path: reports/feature_importance.json
       hash: md5
-      md5: 365c747b7875a901861aaebf905113d0
-      size: 6175
+      md5: ca3eb726e8b71572398df05e99cadd8e
+      size: 6281
     - path: reports/low_signal_features.json
       hash: md5
-      md5: 445d76e49ca9f20fba0ed7d6776e9f53
-      size: 74
+      md5: d1313797510a45333ffd36ee6b2ee29e
+      size: 42
   report:
     cmd: python -m LedgerFlow.evaluation.report
     deps:
@@ -157,18 +157,18 @@ stages:
       nfiles: 1
     - path: reports/eval_metrics.json
       hash: md5
-      md5: b2603a23fa1f9bfd8490404ca4648080
-      size: 963
+      md5: daf56781ddcce0c606a4d5fb31fd3111
+      size: 976
     - path: reports/feature_importance.json
       hash: md5
-      md5: 365c747b7875a901861aaebf905113d0
-      size: 6175
+      md5: ca3eb726e8b71572398df05e99cadd8e
+      size: 6281
     - path: reports/low_signal_features.json
       hash: md5
-      md5: 445d76e49ca9f20fba0ed7d6776e9f53
-      size: 74
+      md5: d1313797510a45333ffd36ee6b2ee29e
+      size: 42
     outs:
     - path: reports/recommendation_memo.md
       hash: md5
-      md5: aefef71cdd56996809d1b3843db18553
-      size: 1704
+      md5: 5588d3232afeae07f0509b7fc3443eaa
+      size: 1607

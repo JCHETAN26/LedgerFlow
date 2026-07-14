@@ -1,11 +1,16 @@
 stages:
   ingest:
-    # Offline-reproducible source. In production this stage runs the PostgreSQL
-    # loader (LedgerFlow.data.loader); the synthetic generator keeps `dvc repro`
-    # and CI runnable without a database.
-    cmd: python -m LedgerFlow.data.synthetic
+    # DEFAULT SOURCE: the real Sparkov fraud dataset. Requires fraudTrain.csv
+    # (download from kaggle.com/datasets/kartik2112/fraud-detection) with its
+    # path set via LEDGERFLOW_SPARKOV_CSV or sparkov.csv_path in params.yaml.
+    # `dvc repro` and CI therefore need the data pulled/present first.
+    #
+    # Offline fallback (no download needed): swap the cmd for
+    #   python -m LedgerFlow.data.synthetic
+    # which emits the same two outputs from a deterministic generator.
+    cmd: python -m LedgerFlow.data.sparkov
     deps:
-      - LedgerFlow/data/synthetic.py
+      - LedgerFlow/data/sparkov.py
       - LedgerFlow/data/validators.py
       - params.yaml
     outs:

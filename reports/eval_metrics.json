@@ -1,30 +1,30 @@
 {
   "models": {
     "LogisticRegression": {
-      "auc_roc": 0.8282813125250099,
-      "avg_precision": 0.8290146039817093,
-      "brier_score": 0.1805590614428329,
-      "log_loss": 0.5562589100478267,
-      "precision_at_5pct_fpr": 0.9081632653061225,
-      "f1": 0.7607655502392344
+      "auc_roc": 0.6019745667648297,
+      "avg_precision": 0.10148810097393782,
+      "brier_score": 0.21374937919491405,
+      "log_loss": 0.6218057814959786,
+      "precision_at_5pct_fpr": 0.060906515580736544,
+      "f1": 0.03529115200403327
     },
     "XGBoost": {
-      "auc_roc": 0.8427621048419368,
-      "avg_precision": 0.8363998367675791,
-      "brier_score": 0.16491912305355072,
-      "log_loss": 0.5000602602958679,
-      "precision_at_5pct_fpr": 0.898989898989899,
-      "f1": 0.7374301675977654
+      "auc_roc": 0.5866352911017114,
+      "avg_precision": 0.1617067295321017,
+      "brier_score": 0.01198140811175108,
+      "log_loss": 0.06352005898952484,
+      "precision_at_5pct_fpr": 0.06704707560627675,
+      "f1": 0.1218274111675127
     },
     "LightGBM": {
-      "auc_roc": 0.8428496398559423,
-      "avg_precision": 0.8308854229217019,
-      "brier_score": 0.16201746518052373,
-      "log_loss": 0.495297881293437,
-      "precision_at_5pct_fpr": 0.9047619047619048,
-      "f1": 0.7520435967302452
+      "auc_roc": 0.6032026004857998,
+      "avg_precision": 0.15486892773527208,
+      "brier_score": 0.011952383129791614,
+      "log_loss": 0.06363060970961285,
+      "precision_at_5pct_fpr": 0.0846774193548387,
+      "f1": 0.12307692307692308
     }
   },
   "recommended": "LightGBM",
-  "recommendation_reason": "LightGBM has the highest test AUC-ROC (0.8428) with a Brier score of 0.1620."
+  "recommendation_reason": "LightGBM has the highest test AUC-ROC (0.6032) with a Brier score of 0.0120."
 }
